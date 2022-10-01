@@ -1,9 +1,9 @@
 <template>
-  <div class="container mt-5 mb-5">
+  <div class="container mt-5 mb-5" id="landing">
     <h1 class="d-flex justify-content-center mb-4">All Users</h1>
     <div class="row row-cols-1 row-cols-lg-2 g-2 g-lg-2">
       <div class="col" v-for="user in users" :key="user.id" style="cursor:pointer">
-        <div class="card">
+        <div class="card" @click="goToUserDetail(user.id, user.name)">
           <div class="card-body">
             <div class="d-flex flex-row align-items-center">
                 <h6 class="card-title me-2">Name : </h6>
@@ -51,7 +51,7 @@ export default {
     users:[]
   }),
   mounted(){
-    this.fetchAllUsers()
+    this.fetchAllUsers();
   },
   methods: {
     fetchAllUsers(){
@@ -64,6 +64,10 @@ export default {
           this.users = json
         });
     },
+    goToUserDetail(userId, userName){
+      localStorage.setItem('user_name', userName)
+      this.$router.push({name: 'AlbumsPosts', params: {userId: userId}});
+    }
   }
 }
 </script>
