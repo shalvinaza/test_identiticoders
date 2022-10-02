@@ -8,6 +8,7 @@
             </ol>
         </nav>
 
+        <!-- setting show option buttons so the page doesnt need to load both albums and posts data at the same time -->
         <div class="d-flex flex-row align-items-center">
             <button class="btn btn-outline-warning me-2" @click="showPosts = false; fetchUserAlbum()">Show Album</button>
             <button class="btn btn-outline-warning" @click="showPosts =  true; fetchUserPosts()">Show Post</button>
@@ -26,7 +27,7 @@
                     <tr v-for="album in albums" :key="album.id">
                         <td>{{album.id}}</td>
                         <td>{{album.title}}</td>
-                        <td style="cursor:pointer" @click="goToPhotos(album.id)"><a class="actionButton" style="text-decoration:none">Show Photos</a></td>
+                        <td style="cursor:pointer" @click="goToPhotos(album)"><a class="actionButton" style="text-decoration:none">Show Photos</a></td>
                     </tr>
                 </tbody>
             </table>
@@ -38,7 +39,7 @@
                     <div>
                         <div class="d-flex flex-row align-items-center">
                             <h6 class="flex-grow-1 card-title">{{post.title}}</h6>
-                            <button type="button" class="btn actionButton" style="cursor:pointer" @click="postEdit(post)"><i class="fa-regular fa-pen-to-square"></i>Edit Post</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" style="cursor:pointer" @click="postEdit(post)"><i class="fa-regular fa-pen-to-square"></i>Edit Post</button>
                         </div>
                         <p class="card-text">{{post.body}}</p>
                     </div>
@@ -46,6 +47,7 @@
             </div>
         </div>
 
+        <!-- popup when user click on edit post button  -->
         <Popup v-if="showPopup" popupTitle="Edit Post" @toggle-modal="toggleModal">
             <form @submit.prevent="updatePost">
                 <label>Title</label>
@@ -63,6 +65,7 @@
 <script>
 import Popup from './Popup.vue'
 
+// declaring base url so it could be reused on some methods
 const BASE_API_URL = 'https://jsonplaceholder.typicode.com'
 
 export default {
@@ -84,6 +87,7 @@ export default {
         updateMessage: ''
     }),
     computed:{
+        // computedly return user's name
         getName: function(){
             return localStorage.getItem('user_name')
         }
@@ -110,9 +114,10 @@ export default {
                     this.posts = json
                 });
         },
-        goToPhotos(albumId){
-            const userId = this.$route.params.userId;
-            this.$router.push({name: 'AlbumPhotos', params: {userId: userId, albumId: albumId}})
+        goToPhotos(album){
+            localStorage.setItem('albumTitle', album.title);
+            //userId included in params for routing path
+            this.$router.push({name: 'AlbumPhotos', params: {userId: album.userId, albumId: album.id}});
         },
         toggleModal(){
             this.showPopup = !this.showPopup;  
@@ -144,9 +149,15 @@ export default {
                         alert('Update status : ' + this.updateMessage)
                         console.log(response);
                         response.json();
+                        //setting back post object value to ''
+                        this.post.id = '';
+                        this.post.title = '';
+                        this.post.body = '';
+                        this.post.userId = '';
                     })
                     .then((json) => console.log(json));
             }catch(err){
+                this.showPopup = false;
                 console.log(err)
             }
         }

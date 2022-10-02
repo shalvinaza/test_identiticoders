@@ -2,7 +2,9 @@
   <div class="container mt-5 mb-5" id="landing">
     <h1 class="d-flex justify-content-center mb-4">All Users</h1>
     <div class="row row-cols-1 row-cols-lg-2 g-2 g-lg-2">
+      <!-- looping all users data -->
       <div class="col" v-for="user in users" :key="user.id" style="cursor:pointer">
+        <!-- set onclick event to go to 2nd level -->
         <div class="card" @click="goToUserDetail(user.id, user.name)">
           <div class="card-body">
             <div class="d-flex flex-row align-items-center">
@@ -65,7 +67,10 @@ export default {
         });
     },
     goToUserDetail(userId, userName){
+      // set user's name as localstorage 
+      // to be shown on 2nd level page
       localStorage.setItem('user_name', userName)
+      // routing to 2nd level page with user id as param
       this.$router.push({name: 'AlbumsPosts', params: {userId: userId}});
     }
   }

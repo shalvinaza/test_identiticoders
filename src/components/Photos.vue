@@ -1,6 +1,6 @@
 <template>
     <div class="container mt-5 mb-5">
-        <h1 class="d-flex justify-content-center mb-4">Photos</h1>
+        <h1 class="d-flex justify-content-center mb-4">{{albumTitle}}'s Photos</h1>
         <nav aria-label="breadcrumb" class="mt-5 mb-4" style="cursor:pointer">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href='/' style="text-decoration:none">All Users</a></li>
@@ -9,7 +9,10 @@
             </ol>
         </nav>
 
+        <button class="btn btn-outline-warning mb-4" @click="showPopup = true">Add New Photo</button>
+
         <div class="row row-cols-2 row-cols-lg-5 g-2 g-lg-2" id="photos">
+            <!-- looping photos sliced for 10 photos per page -->
             <div class="col" v-for="photo in photos.slice((currentPage-1)*perPage, (currentPage-1)*perPage+perPage)" :key="photo.id" :current-page="currentPage">
                 <div class="card">
                     <img :src="photo.url" :alt="photo.title">
@@ -29,30 +32,62 @@
             aria-controls="photos"
             ></b-pagination>
         </div>
+
+        <!-- popup for when user click on add new photo button -->
+        <Popup v-if="showPopup" popupTitle="Add New Photo" @toggle-modal="toggleModal">
+            <form @submit.prevent="createNewPhoto"> 
+                <label>ID</label>
+                <input type="text" class="card-title d-flex w-100 ps-2 pe-2 mb-2" placeholder="Type the ID here" disabled v-model="totalPhotos">
+                <label>Title</label>
+                <input type="text" class="card-title d-flex w-100 ps-2 pe-2 mb-2" placeholder="Type the title here" v-model="newPhoto.title">
+                <label class="d-flex">Photo URL</label>
+                <input type="file" @change="addImage">
+                <label class="d-flex mt-2">Thumbnail URL</label>
+                <input type="file" @change="addThumbnail">
+                <img v-if="previewImage" :src="previewImage" class="mt-2 d-flex" alt="Photo Preview" style="width:150px; height:150px">
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-outline-primary mt-4">Update</button>
+                </div>
+            </form>
+        </Popup>  
     </div>
 </template>
 
 <script>
+import Popup from './Popup.vue'
 
 const BASE_API_URL = 'https://jsonplaceholder.typicode.com'
 
 export default {
     name: 'Photos',
+    components:{
+        Popup
+    },
     data: () => ({
         photos:[],
-        newPhotos: {
-            albumId: '',
-            id: '', // ID is declared because I don't know if it'll automatically filled on the backend or not
+        newPhoto: {
+            // ID is declared because I don't know if it'll 
+            // automatically filled on the backend or not
+            id: '', 
             title: '',
             url: '',
-            thumbnailUrl: ''
+            thumbnailUrl: '' 
         },
+        showPopup : false,
+        updateMessage: '',
+        previewImage: '',
         perPage: 10,
         currentPage: 1
     }),
     computed:{
         rows(){
             return this.photos.length;
+        },
+        albumTitle: function(){
+            return localStorage.getItem('albumTitle');
+        },
+        totalPhotos: function(){
+            return this.photos.length + 1;
         }
     },
     mounted(){
@@ -67,6 +102,56 @@ export default {
                     console.log(json)
                     this.photos = json
                 });
+        },
+        toggleModal(){
+            this.showPopup = !this.showPopup;  
+        },
+        addImage(event){
+            const photoName = event.target.files[0].name;
+            //saving url as the pic name instead of url 
+            //because pic wont be actually posted to the database
+            this.newPhoto.url = photoName;
+            this.previewImage = URL.createObjectURL(event.target.files[0]);
+        },
+        addThumbnail(event){
+            const thumbnailName = event.target.files[0].name;
+            this.newPhoto.thumbnailUrl = thumbnailName;
+        },
+        createNewPhoto(){
+            try{
+                const albumId = this.$route.params.albumId;
+                let newId = this.totalPhotos;
+                this.newPhoto.id = newId;
+                fetch(`${BASE_API_URL}/albums/` + albumId + '/photos', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        albumId: albumId,
+                        id: this.newPhoto.id,
+                        title: this.newPhoto.title,
+                        url: this.newPhoto.url,
+                        thumbnailUrl: this.newPhoto.thumbnailUrl
+                    }),
+                    headers: {
+                        'Content-type' : 'applicaiton/json; charset=UTF-8',
+                    },
+                })
+                    .then((response) => {
+                        this.showPopup = false;
+                        this.updateMessage = response.status;
+                        alert('Status : ' + this.updateMessage);
+                        console.log(response);
+                        response.json();
+                        this.newPhoto.id = '';
+                        this.newPhoto.title = '';
+                        this.newPhoto.url = '';
+                        this.newPhoto.thumbnailUrl = '';
+                    })
+                    // .then((response) => console.log(response))
+                    .then((json) => console.log(json));
+            } catch(err){
+                this.showPopup = false;
+                console.log(err)
+            }
         }
     }
 }
