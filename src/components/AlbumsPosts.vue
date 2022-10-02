@@ -1,6 +1,13 @@
 <template>
     <div class="container mt-5 mb-5">
         <h1 class="d-flex justify-content-center mb-4">{{getName}}'s Albums and Posts</h1>
+        <nav aria-label="breadcrumb" class="mt-5 mb-4" style="cursor:pointer">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" style="text-decoration:none">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Albums and Posts</li>
+            </ol>
+        </nav>
+
         <div class="d-flex flex-row align-items-center">
             <button class="btn btn-outline-warning me-2" @click="showPosts = false; fetchUserAlbum()">Show Album</button>
             <button class="btn btn-outline-warning" @click="showPosts =  true; fetchUserPosts()">Show Post</button>
@@ -19,7 +26,7 @@
                     <tr v-for="album in albums" :key="album.id">
                         <td>{{album.id}}</td>
                         <td>{{album.title}}</td>
-                        <td>Display Photos</td>
+                        <td style="cursor:pointer" @click="goToPhotos(album.id)"><a class="actionButton" style="text-decoration:none">Show Photos</a></td>
                     </tr>
                 </tbody>
             </table>
@@ -55,9 +62,6 @@ export default {
     mounted(){
         this.fetchUserAlbum();
     },
-    beforeDestroy(){
-        localStorage.removeItem('user_name')
-    },
     methods: {
         fetchUserAlbum(){
             const userId = this.$route.params.userId;
@@ -76,6 +80,10 @@ export default {
                     console.log(json)
                     this.posts = json
                 });
+        },
+        goToPhotos(albumId){
+            const userId = this.$route.params.userId;
+            this.$router.push({name: 'AlbumPhotos', params: {userId: userId, albumId: albumId}})
         }
     }
 
@@ -83,6 +91,11 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.actionButton{
+    color: blue;
+}
+.actionButton:hover{
+    color: rgb(66, 66, 171);
+}
 </style>
