@@ -46,7 +46,7 @@
                 <input type="file" @change="addThumbnail">
                 <img v-if="previewImage" :src="previewImage" class="mt-2 d-flex" alt="Photo Preview" style="width:150px; height:150px">
                 <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-outline-primary mt-4">Update</button>
+                    <button type="submit" class="btn btn-outline-primary mt-4">Upload</button>
                 </div>
             </form>
         </Popup>  
