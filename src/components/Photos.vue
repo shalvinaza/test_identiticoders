@@ -3,7 +3,7 @@
         <h1 class="d-flex justify-content-center mb-4">Photos</h1>
         <nav aria-label="breadcrumb" class="mt-5 mb-4" style="cursor:pointer">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href='/' style="text-decoration:none">Home</a></li>
+                <li class="breadcrumb-item"><a href='/' style="text-decoration:none">All Users</a></li>
                 <li class="breadcrumb-item"><a :href="'/albums-posts/' + this.$route.params.userId" style="text-decoration:none">Albums and Posts</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Album's Photos</li>
             </ol>

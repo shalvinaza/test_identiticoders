@@ -3,7 +3,7 @@
         <h1 class="d-flex justify-content-center mb-4">{{getName}}'s Albums and Posts</h1>
         <nav aria-label="breadcrumb" class="mt-5 mb-4" style="cursor:pointer">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/" style="text-decoration:none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/" style="text-decoration:none">All Users</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Albums and Posts</li>
             </ol>
         </nav>
@@ -35,24 +35,53 @@
             <h5 class="mt-4">{{getName}}'s Posts</h5>
             <div class="card mb-2" v-for="post in posts" :key="post.id">
                 <div class="card-body">
-                    <h6 class="card-title">{{post.title}}</h6>
-                    <p class="card-text">{{post.body}}</p>
+                    <div>
+                        <div class="d-flex flex-row align-items-center">
+                            <h6 class="flex-grow-1 card-title">{{post.title}}</h6>
+                            <button type="button" class="btn actionButton" style="cursor:pointer" @click="postEdit(post)"><i class="fa-regular fa-pen-to-square"></i>Edit Post</button>
+                        </div>
+                        <p class="card-text">{{post.body}}</p>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <Popup v-if="showPopup" popupTitle="Edit Post" @toggle-modal="toggleModal">
+            <form @submit.prevent="updatePost">
+                <label>Title</label>
+                <input type="text" class="card-title d-flex w-100 ps-2 pe-2 mb-2" placeholder="Type the title here" v-model="post.title">
+                <label>Body</label>
+                <textarea type="text" class="card-text d-flex w-100 ps-2 pe-2" placeholder="Type the body here" v-model="post.body"></textarea>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-outline-primary mt-4">Update</button>
+                </div>
+            </form>
+        </Popup>        
     </div>
 </template>
 
 <script>
+import Popup from './Popup.vue'
 
 const BASE_API_URL = 'https://jsonplaceholder.typicode.com'
 
 export default {
     name: 'AlbumsPosts',
+    components: {
+        Popup
+    },
     data: () => ({
         albums: [],
         posts: [],
-        showPosts : false
+        showPosts : false,
+        showPopup: false,
+        post: {
+            id: '',
+            title: '',
+            body: '',
+            userId: ''
+        },
+        updateMessage: ''
     }),
     computed:{
         getName: function(){
@@ -84,6 +113,42 @@ export default {
         goToPhotos(albumId){
             const userId = this.$route.params.userId;
             this.$router.push({name: 'AlbumPhotos', params: {userId: userId, albumId: albumId}})
+        },
+        toggleModal(){
+            this.showPopup = !this.showPopup;  
+        },
+        postEdit(post){
+            this.showPopup = true;
+            this.post.id = post.id;
+            this.post.title = post.title;
+            this.post.body = post.body;
+            this.post.userId = post.userId;
+        },
+        updatePost(){
+            try{
+                fetch(`${BASE_API_URL}/posts/` + this.post.id, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        id: this.post.id,
+                        title: this.post.title,
+                        body: this.post.body,
+                        userId: this.post.userId
+                    }),
+                    headers: {
+                        'Content-type' : 'application/json; charset=UTF-8',
+                    },
+                })
+                    .then((response) => {
+                        this.showPopup = false;
+                        this.updateMessage = response.status;
+                        alert('Update status : ' + this.updateMessage)
+                        console.log(response);
+                        response.json();
+                    })
+                    .then((json) => console.log(json));
+            }catch(err){
+                console.log(err)
+            }
         }
     }
 
@@ -93,9 +158,9 @@ export default {
 
 <style scoped>
 .actionButton{
-    color: blue;
+    color: grey;
 }
 .actionButton:hover{
-    color: rgb(66, 66, 171);
+    color: blue;
 }
 </style>
