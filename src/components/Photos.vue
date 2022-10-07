@@ -36,8 +36,6 @@
         <!-- popup for when user click on add new photo button -->
         <Popup v-if="showPopup" popupTitle="Add New Photo" @toggle-modal="toggleModal">
             <form @submit.prevent="createNewPhoto"> 
-                <label>ID</label>
-                <input type="text" class="card-title d-flex w-100 ps-2 pe-2 mb-2" placeholder="Type the ID here" disabled v-model="totalPhotos">
                 <label>Title</label>
                 <input type="text" class="card-title d-flex w-100 ps-2 pe-2 mb-2" placeholder="Type the title here" v-model="newPhoto.title">
                 <label class="d-flex">Photo URL</label>
@@ -66,15 +64,15 @@ export default {
     data: () => ({
         photos:[],
         newPhoto: {
-            // ID is declared because I don't know if it'll 
-            // automatically filled on the backend or not
-            id: '', 
+            // // ID is declared because I don't know if it'll 
+            // // automatically filled on the backend or not
+            // id: '', 
             title: '',
             url: '',
             thumbnailUrl: '' 
         },
         showPopup : false,
-        updateMessage: '',
+        // updateMessage: '',
         previewImage: '',
         perPage: 10,
         currentPage: 1
@@ -85,10 +83,12 @@ export default {
         },
         albumTitle: function(){
             return localStorage.getItem('albumTitle');
-        },
-        totalPhotos: function(){
-            return this.photos.length + 1;
         }
+        // I decided not to use the totalPhotos function
+        // since I found out that ID is automatically filled
+        // totalPhotos: function(){
+        //     return this.photos.length + 1;
+        // }
     },
     mounted(){
         this.fetchAlbumPhotos()
@@ -120,13 +120,10 @@ export default {
         createNewPhoto(){
             try{
                 const albumId = this.$route.params.albumId;
-                let newId = this.totalPhotos;
-                this.newPhoto.id = newId;
                 fetch(`${BASE_API_URL}/albums/` + albumId + '/photos', {
                     method: 'POST',
                     body: JSON.stringify({
                         albumId: albumId,
-                        id: this.newPhoto.id,
                         title: this.newPhoto.title,
                         url: this.newPhoto.url,
                         thumbnailUrl: this.newPhoto.thumbnailUrl
@@ -135,21 +132,34 @@ export default {
                         'Content-type' : 'applicaiton/json; charset=UTF-8',
                     },
                 })
-                    .then((response) => {
-                        this.showPopup = false;
-                        this.updateMessage = response.status;
-                        alert('Status : ' + this.updateMessage);
-                        console.log(response);
-                        response.json();
-                        this.newPhoto.id = '';
+                    // .then((response) => {
+                    //     this.showPopup = false;
+                    //     this.updateMessage = response.status;
+                    //     alert('Status : ' + this.updateMessage);
+                    //     console.log(response);
+                    //     response.json();
+                    //     this.newPhoto.id = '';
+                    //     this.newPhoto.title = '';
+                    //     this.newPhoto.url = '';
+                    //     this.newPhoto.thumbnailUrl = '';
+                    // })
+                    // .then((json) => console.log(json));
+
+                    // I changed the .then part because the old .then 
+                    // code return undefined when i want to return object on 
+                    // the console
+
+                    .then((response) => Promise.all([response.status,response.json()]))
+                    .then(([status,json]) => {
+                        alert('Status : ' + status)
+                        console.log(json)
+                        this.showPopup = false;                  
                         this.newPhoto.title = '';
                         this.newPhoto.url = '';
                         this.newPhoto.thumbnailUrl = '';
-                    })
-                    // .then((response) => console.log(response))
-                    .then((json) => console.log(json));
+                    });
             } catch(err){
-                this.showPopup = false;
+                this.showPopup = true;
                 console.log(err)
             }
         }

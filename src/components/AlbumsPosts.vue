@@ -84,7 +84,7 @@ export default {
             body: '',
             userId: ''
         },
-        updateMessage: ''
+        // updateMessage: ''
     }),
     computed:{
         // computedly return user's name
@@ -143,21 +143,38 @@ export default {
                         'Content-type' : 'application/json; charset=UTF-8',
                     },
                 })
-                    .then((response) => {
-                        this.showPopup = false;
-                        this.updateMessage = response.status;
-                        alert('Update status : ' + this.updateMessage)
-                        console.log(response);
-                        response.json();
+                    // .then((response) => {
+                    //     this.showPopup = false;
+                    //     this.updateMessage = response.status;
+                    //     alert('Update status : ' + this.updateMessage)
+                    //     console.log(response);
+                    //     response.json();
+                    //     //setting back post object value to ''
+                    //     this.post.id = '';
+                    //     this.post.title = '';
+                    //     this.post.body = '';
+                    //     this.post.userId = '';
+                    // })
+                    // .then((json) => console.log(json));
+
+                    // I changed the .then part because the old .then 
+                    // code return undefined when i want to return object on 
+                    // the console
+
+                    .then((response) => Promise.all([response.status, response.json()]))
+                    .then(([status, json]) => {
+                        alert('Status: ' + status)
+                        console.log(json)
+                        this.showPopup = false
                         //setting back post object value to ''
-                        this.post.id = '';
-                        this.post.title = '';
-                        this.post.body = '';
-                        this.post.userId = '';
+                        this.post.id = ''
+                        this.post.title = ''
+                        this.post.body = ''
+                        this.post.userId = ''
                     })
-                    .then((json) => console.log(json));
+
             }catch(err){
-                this.showPopup = false;
+                this.showPopup = true;
                 console.log(err)
             }
         }
